@@ -1,0 +1,81 @@
+diff --git a/setup.py b/setup.py
+index 09092fa..c80fdeb 100644
+--- a/setup.py
++++ b/setup.py
+@@ -29,27 +29,21 @@ pj_version_major=""
+ pj_version_minor=""
+ pj_version_rev=""
+ pj_version_suffix=""
+-f = open('../../../version.mak', 'r')
++f = open('/usr/include/pj/config.h', 'r')
+ for line in f:
+-    if line.find("export PJ_VERSION_MAJOR") != -1:
+-        tokens=line.split("=")
+-    else:
+-        tokens=[]
+-    if len(tokens)>1:
+-        pj_version_major= tokens[1].strip()
+-    elif line.find("export PJ_VERSION_MINOR") != -1:
+-        tokens=line.split("=")
+-    if len(tokens)>1:
+-        pj_version_minor= line.split("=")[1].strip()
+-    elif line.find("export PJ_VERSION_REV") != -1:
+-        tokens=line.split("=")
+-    if len(tokens)>1:
+-        pj_version_rev= line.split("=")[1].strip()
+-    elif line.find("export PJ_VERSION_SUFFIX") != -1:
+-        tokens=line.split("=")
+-    if len(tokens)>1:
+-        pj_version_suffix= line.split("=")[1].strip()
+-
++    if line.find("#define") == -1:
++        continue
++    if line.find("PJ_VERSION_NUM_") == -1:
++        continue
++    tokens = line.replace("\t"," ").strip().split()
++    if tokens[1] == 'PJ_VERSION_NUM_MAJOR':
++        pj_version_major= tokens[2]
++    if tokens[1] == 'PJ_VERSION_NUM_MINOR':
++        pj_version_minor = tokens[2]
++    if tokens[1] == 'PJ_VERSION_NUM_REV':
++        pj_version_rev = tokens[2]
++    if tokens[1] == 'PJ_VERSION_NUM_EXTRA':
++        pj_version_suffix = tokens[2].strip('"')
+ f.close()
+ if not pj_version_major:
+     print('Unable to get PJ_VERSION_MAJOR')
+@@ -61,29 +55,19 @@ if pj_version_rev:
+ if pj_version_suffix:
+     pj_version += "-" + pj_version_suffix
+ 
+-#print 'PJ_VERSION = "'+ pj_version + '"'
+-
++# print('PJ_VERSION = "'+ pj_version + '"')
+ 
+ # Fill in pj_inc_dirs
+ pj_inc_dirs = []
+-f = os.popen("make -f helper.mak inc_dir")
+-for line in f:
+-    pj_inc_dirs.append(line.rstrip("\r\n"))
+-f.close()
++pj_inc_dirs.append("/usr/include\r\n")
++pj_inc_dirs.append("/usr/include/linux\r\n")
+ 
+ # Fill in pj_lib_dirs
+ pj_lib_dirs = []
+-f = os.popen("make -f helper.mak lib_dir")
+-for line in f:
+-    pj_lib_dirs.append(line.rstrip("\r\n"))
+-f.close()
++pj_lib_dirs.append("/usr/lib\r\n")
+ 
+ # Fill in pj_libs
+-pj_libs = []
+-f = os.popen("make -f helper.mak libs")
+-for line in f:
+-    pj_libs.append(line.rstrip("\r\n"))
+-f.close()
++pj_libs = "pjsua pjsip-ua pjsip-simple pjsip pjmedia-codec pjmedia pjmedia-videodev pjmedia-audiodev pjmedia pjnath pjlib-util resample ilbccodec g7221codec srtp2 gsm speex speexdsp portaudio pj ssl crypto m rt pthread".split()
+ 
+ # Mac OS X depedencies
+ if platform.system() == 'Darwin':
